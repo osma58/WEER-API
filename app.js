@@ -1,11 +1,11 @@
-// Tutorial by http://youtube.com/CodeExplained
+
 
 
 // element selecteren
-const iconElement = document.querySelector('.weer-icon');
-const tempElement = document.querySelector('.temp-waarde p');
-const infoElement = document.querySelector('.temp-info p');
-const locatielement = document.querySelector('.locatie');
+const iconElement = document.querySelector('.weather-icon');
+const tempElement = document.querySelector('.temperature-value p');
+const infoElement = document.querySelector('.temperature-description p');
+const locatieElement = document.querySelector('.locatie');
 const notificatieElement = document.querySelector('.notificatie');
 
 // app data
@@ -44,8 +44,51 @@ function showError(error) {
 
 //get weather from api provider
 function getWeather(latitude, longitude){
-    let api = `http://api.openweathermap.org/data/2.5/weather?
-    lat=${latitude}&lon=${longitude}&appid=${key}`;
+    let api = `http://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${key}`;
 
-    console.log(api);
+    fetch(api)
+    .then(function(response) {
+        let data = response.json();
+        return data;
+    })
+    .then(function(data){
+        weer.temp.value = Math.floor(data.main.temp - KELVIN);
+        weer.description = data.weather[0].description;
+        weer.iconId = data.weather[0].icon;
+        weer.city = data.name;
+        weer.country = data.sys.country;
+
+    })
+    .then(function(){
+        displayWeather();
+    });
+
+    //display weer
+    function displayWeather(){
+        iconElement.innerHTML = `<img src="icons/${weer.iconId}.png"/>`;
+        tempElement.innerHTML = `${weer.temp.value}°<span>C</span>`;
+        infoElement.innerHTML = weer.description;
+        locatieElement.innerHTML = `${weer.city}, ${weer.country}`;
+    }
+
+    // c naar F
+    function celciusToFahrenheit(temperature) {
+        return (temperature * 9/5) + 32;
+    }
+
+    //asl je klikt op de temp
+    tempElement.addEventListener("click", function(){
+        if(weer.temp.value === undefined) return;
+
+         if(weer.temp.unit == "celcius"){
+             let fahrenheit = celciusToFahrenheit(weer.temp.value);
+             fahrenheit = Math.floor(fahrenheit);
+
+             tempElement.innerHTML = `${fahrenheit}°<span>F</span>`;
+             weer.temp.unit = "fahrenheit";
+         }else {
+            tempElement.innerHTML = `${weer.temp.value}°<span>C</span>`;
+            weer.temp.unit = "celcius"
+         }
+    })
 }
